@@ -10,7 +10,7 @@ libpath = os.path.abspath(os.path.join(os.path.dirname(__file__), './libgridart.
 libgridart = ctypes.CDLL(libpath)
 
 
-def run(data, theta, center=None):
+def run(data, theta, num_grid=None, center=None):
     """
     Python wrapper for the art.c function.
     
@@ -41,8 +41,12 @@ def run(data, theta, center=None):
     theta = np.array(theta, dtype='float32')
     center = np.array(center, dtype='float32')
 
+    # Iterations count
+    num_iter = 1
+
     # Init recon matrix.
-    num_grid = num_cols
+    if num_grid is None:
+        num_grid = num_cols
     recon = np.zeros((num_rows, num_grid, num_grid), dtype='float32')
 
     # Call C function to reconstruct recon matrix.
@@ -55,13 +59,14 @@ def run(data, theta, center=None):
                  ctypes.c_int(num_rows),
                  ctypes.c_int(num_cols),
                  ctypes.c_int(num_grid),
+                 ctypes.c_int(num_iter),
                  recon.ctypes.data_as(c_float_p))
     return recon
     
 
 def data2tif(data, output_file=None, x_start=0,
              digits=5, axis=0, overwrite=True, 
-             dtype='uint8', data_min=None, data_max=None):
+             dtype='float32', data_min=None, data_max=None):
     """ 
     Write 3-D data to a stack of tif files.
 
